@@ -5,40 +5,49 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Авторизация в игре</title>
 <style>
-  body { font-family: Arial; display:flex; justify-content:center; align-items:center; height:100vh; background:#f0f0f0; }
-  #status { font-size: 18px; color: #333; }
+  body { font-family: Arial; display:flex; flex-direction:column; justify-content:center; align-items:center; height:100vh; background:#f0f0f0; }
+  input, button { font-size:16px; padding:8px; margin:5px; }
+  #status { margin-top:10px; }
 </style>
 </head>
 <body>
-<div id="status">Авторизация...</div>
+
+<h2>Авторизация в игре</h2>
+<input id="gameId" placeholder="Вставьте свой ID из игры" />
+<button id="loginBtn">Войти</button>
+<div id="status"></div>
 
 <script>
-const tg = window.Telegram.WebApp;
-const initData = tg.initData; // данные Telegram
+const BACKEND_URL = "https://game-auth-bot.onrender.com/api/login"; // твой Render backend
 
-const BACKEND_URL = "https://game-auth-bot.onrender.com/api/login"; // твой backend
+document.getElementById("loginBtn").onclick = async () => {
+  const gameId = document.getElementById("gameId").value.trim();
+  if (!gameId) {
+    alert("Введите ваш ID из игры");
+    return;
+  }
 
-async function authorize() {
+  document.getElementById("status").textContent = "Авторизация...";
+
   try {
     const res = await fetch(BACKEND_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ initData })
+      body: JSON.stringify({ gameId })
     });
+
     const data = await res.json();
     if (data.success) {
       document.getElementById("status").textContent = "Авторизация успешна!";
     } else {
       document.getElementById("status").textContent = "Ошибка авторизации!";
-      console.error(data);
     }
   } catch (err) {
     document.getElementById("status").textContent = "Ошибка соединения!";
     console.error(err);
   }
-}
-
-authorize();
+};
 </script>
+
 </body>
 </html>
