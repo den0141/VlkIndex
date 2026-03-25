@@ -6,24 +6,24 @@
 <title>Авторизация в игре</title>
 <style>
   body { font-family: Arial; display:flex; flex-direction:column; justify-content:center; align-items:center; height:100vh; background:#f0f0f0; }
-  input, button { font-size:16px; padding:8px; margin:5px; }
-  #status { margin-top:10px; }
+  input, button { font-size:16px; padding:8px; margin:5px; width:90%; max-width:500px; }
+  #status { margin-top:10px; color:green; }
 </style>
 </head>
 <body>
 
 <h2>Авторизация в игре</h2>
-<input id="gameId" placeholder="Вставьте свой ID из игры" />
+<textarea id="initData" placeholder="Вставьте всю строку initData из Telegram" rows="4"></textarea>
 <button id="loginBtn">Войти</button>
 <div id="status"></div>
 
 <script>
-const BACKEND_URL = "https://game-auth-bot.onrender.com/api/login"; // твой Render backend
+const BACKEND_URL = "https://game-auth-bot.onrender.com/api/login"; // ваш backend Render
 
 document.getElementById("loginBtn").onclick = async () => {
-  const gameId = document.getElementById("gameId").value.trim();
-  if (!gameId) {
-    alert("Введите ваш ID из игры");
+  const initData = document.getElementById("initData").value.trim();
+  if (!initData) {
+    alert("Вставьте вашу строку initData из Telegram");
     return;
   }
 
@@ -33,7 +33,7 @@ document.getElementById("loginBtn").onclick = async () => {
     const res = await fetch(BACKEND_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ gameId })
+      body: JSON.stringify({ initData })
     });
 
     const data = await res.json();
@@ -41,6 +41,7 @@ document.getElementById("loginBtn").onclick = async () => {
       document.getElementById("status").textContent = "Авторизация успешна!";
     } else {
       document.getElementById("status").textContent = "Ошибка авторизации!";
+      console.error(data);
     }
   } catch (err) {
     document.getElementById("status").textContent = "Ошибка соединения!";
