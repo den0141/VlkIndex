@@ -63,10 +63,10 @@ document.getElementById("loginBtn").onclick = async () => {
 
   try {
     const res = await fetch(BACKEND_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ access_token: token })
-    });
+  method: "POST",
+  headers: { "Content-Type": "application/x-www-form-urlencoded" },
+  body: initData // ⚠️ просто строка, не JSON
+});
 
     const data = await res.json();
     if (data.success) {
