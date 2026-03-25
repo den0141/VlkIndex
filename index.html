@@ -5,26 +5,58 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Авторизация в игре</title>
 <style>
-  body { font-family: Arial; display:flex; flex-direction:column; justify-content:center; align-items:center; height:100vh; background:#f0f0f0; }
-  input, button { font-size:16px; padding:8px; margin:5px; width:90%; max-width:500px; }
-  #status { margin-top:10px; color:green; }
+  body { 
+    font-family: Arial; 
+    display:flex; 
+    flex-direction:column; 
+    justify-content:center; 
+    align-items:center; 
+    height:100vh; 
+    background:#f0f0f0; 
+  }
+  input, textarea, button { 
+    font-size:16px; 
+    padding:8px; 
+    margin:5px; 
+    width:90%; 
+    max-width:500px; 
+  }
+  #status { 
+    margin-top:10px; 
+    color:green; 
+  }
 </style>
 </head>
 <body>
 
 <h2>Авторизация в игре</h2>
+
 <textarea id="initData" placeholder="Вставьте всю строку initData из Telegram" rows="4"></textarea>
+<input id="accessToken" placeholder="Или вставьте ваш access_token для игры" />
 <button id="loginBtn">Войти</button>
 <div id="status"></div>
 
 <script>
-const BACKEND_URL = "https://game-auth-bot.onrender.com/api/login"; // ваш backend Render
+const BACKEND_URL = "https://game-auth-bot.onrender.com/api/resources"; // ваш backend Render
 
 document.getElementById("loginBtn").onclick = async () => {
   const initData = document.getElementById("initData").value.trim();
-  if (!initData) {
-    alert("Вставьте вашу строку initData из Telegram");
+  const accessToken = document.getElementById("accessToken").value.trim();
+
+  if (!initData && !accessToken) {
+    alert("Вставьте initData или access_token");
     return;
+  }
+
+  let token = accessToken;
+  if (!token && initData) {
+    // Если есть только initData, вытаскиваем access_token вручную
+    try {
+      const params = new URLSearchParams(initData);
+      token = params.get('access_token') || initData; // если в initData есть параметр access_token
+    } catch(e) {
+      console.error(e);
+    }
   }
 
   document.getElementById("status").textContent = "Авторизация...";
@@ -33,12 +65,17 @@ document.getElementById("loginBtn").onclick = async () => {
     const res = await fetch(BACKEND_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ initData })
+      body: JSON.stringify({ access_token: token })
     });
 
     const data = await res.json();
     if (data.success) {
-      document.getElementById("status").textContent = "Авторизация успешна!";
+      document.getElementById("status").innerHTML = `
+        Авторизация успешна!<br>
+        💰 Рубли: ${data.rubles}<br>
+        🚬 Сигареты: ${data.cigarettes}<br>
+        🍚 Сахар: ${data.sugar}
+      `;
     } else {
       document.getElementById("status").textContent = "Ошибка авторизации!";
       console.error(data);
