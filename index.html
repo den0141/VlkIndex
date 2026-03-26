@@ -4,9 +4,14 @@
 <meta charset="UTF-8">
 <title>WebApp Тюряга</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+body { font-family: sans-serif; padding: 20px; }
+input { width: 100%; padding: 10px; margin: 10px 0; }
+button { padding: 10px 20px; }
+</style>
 </head>
 <body>
-<h1>Вход в игру</h1>
+<h2>Вход в игру</h2>
 <input type="text" id="tokenInput" placeholder="Вставьте свой токен">
 <button id="loginBtn">Войти</button>
 <p id="status"></p>
@@ -21,9 +26,8 @@ document.getElementById("loginBtn").addEventListener("click", async () => {
         document.getElementById("status").innerText = "Введите токен!";
         return;
     }
-
     document.getElementById("status").innerText = "Получаем профиль...";
-    
+
     try {
         const res = await fetch("https://game-auth-bot.onrender.com/api/login", {
             method: "POST",
@@ -31,11 +35,14 @@ document.getElementById("loginBtn").addEventListener("click", async () => {
             body: JSON.stringify({ token })
         });
         const data = await res.json();
+
         if (data.error) {
             document.getElementById("status").innerText = "Ошибка: " + data.error;
             return;
         }
-        document.getElementById("status").innerText = `Привет, ${data.nickname}! Валюта: ${data.currencies.rubles} руб.`;
+
+        document.getElementById("status").innerHTML =
+            `Привет, <b>${data.nickname}</b>!<br>Валюта: ${data.currencies.rubles} руб.`;
     } catch (e) {
         console.error(e);
         document.getElementById("status").innerText = "Ошибка получения профиля";
