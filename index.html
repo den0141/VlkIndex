@@ -1,57 +1,43 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Авторизация в игре</title>
-<style>
-  body { font-family: Arial; display:flex; flex-direction:column; justify-content:center; align-items:center; height:100vh; background:#f0f0f0; }
-  input, button, textarea { font-size:16px; padding:8px; margin:5px; width:90%; max-width:500px; }
-  #status { margin-top:10px; color:green; }
-</style>
+  <meta charset="UTF-8" />
+  <title>Игровой профиль</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
-<body>
 
-<h2>Авторизация в игре</h2>
-<textarea id="initData" placeholder="Вставьте всю строку initData из Telegram" rows="4"></textarea>
-<button id="loginBtn">Войти</button>
-<div id="status"></div>
+<body style="font-family: sans-serif; background:#111; color:white;">
+  <h2>Ваш профиль</h2>
 
-<script>
-const BACKEND_URL = "https://game-auth-bot.onrender.com/api/login";
+  <div id="profile">Загрузка...</div>
 
-document.getElementById("loginBtn").onclick = async () => {
-  const initData = document.getElementById("initData").value.trim();
-  if (!initData) { alert("Вставьте вашу строку initData из Telegram"); return; }
+  <script>
+    const tg = Telegram.WebApp;
+    tg.expand();
 
-  document.getElementById("status").textContent = "Авторизация...";
+    // initData — телеграмовская подпись
+    const initData = tg.initData;
 
-  try {
-    const res = await fetch(BACKEND_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ initData })
+    // Запрос на Python-бэкенд
+    fetch("https://your-domain.com/api/profile", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ initData: initData })
+    })
+    .then(res => res.json())
+    .then(data => {
+        document.getElementById("profile").innerHTML = `
+          <b>Уровень:</b> ${data.level}<br>
+          <b>Опыт:</b> ${data.experience} / ${data.nextLevelExperience}<br><br>
+          
+          <b>Валюта:</b><br>
+          Cash: ${data.currencies.Cash}<br>
+          Gold: ${data.currencies.Gold}<br>
+          Prison: ${data.currencies.PrisonCurrency}<br><br>
+
+          <b>Энергия:</b> ${data.energy} / ${data.maxEnergy}<br>
+        `;
     });
-
-    const data = await res.json();
-
-    if (data.success) {
-      document.getElementById("status").textContent = "Авторизация успешна!";
-      // Пример: показываем валюту пользователя
-      if(data.currencies){
-        document.getElementById("status").textContent +=
-          ` | Рубли: ${data.currencies.rubles}, Сигареты: ${data.currencies.cigarettes}, Сахар: ${data.currencies.sugar}`;
-      }
-    } else {
-      document.getElementById("status").textContent = "Ошибка авторизации!";
-      console.error(data);
-    }
-  } catch (err) {
-    document.getElementById("status").textContent = "Ошибка соединения!";
-    console.error(err);
-  }
-};
-</script>
-
+  </script>
 </body>
 </html>
