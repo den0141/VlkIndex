@@ -1,37 +1,21 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-<meta charset="UTF-8">
-<title>WebApp Тюряга</title>
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
-<style>
-body { font-family: sans-serif; padding: 20px; }
-input { width: 100%; padding: 10px; margin: 10px 0; }
-button { padding: 10px 20px; }
-</style>
-</head>
-<body>
-<h2>Вход в игру</h2>
 <input type="text" id="tokenInput" placeholder="Вставьте свой токен">
 <button id="loginBtn">Войти</button>
 <p id="status"></p>
 
 <script>
-const tg = window.Telegram.WebApp;
-tg.expand();
-
 document.getElementById("loginBtn").addEventListener("click", async () => {
     const token = document.getElementById("tokenInput").value.trim();
     if (!token) {
         document.getElementById("status").innerText = "Введите токен!";
         return;
     }
+
     document.getElementById("status").innerText = "Получаем профиль...";
 
     try {
-        const res = await fetch("https://game-auth-bot.onrender.com/api/login", {
+        const res = await fetch("https://your-backend.onrender.com/api/player", {
             method: "POST",
-            headers: {"Content-Type": "application/json"},
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ token })
         });
         const data = await res.json();
@@ -49,5 +33,3 @@ document.getElementById("loginBtn").addEventListener("click", async () => {
     }
 });
 </script>
-</body>
-</html>
