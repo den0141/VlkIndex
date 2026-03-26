@@ -1,46 +1,46 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <title>WebApp Тюряга</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+<meta charset="UTF-8">
+<title>WebApp Тюряга</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
-    <h1>Вход в игру</h1>
-    <p id="status">Инициализация...</p>
+<h1>Вход в игру</h1>
+<input type="text" id="tokenInput" placeholder="Вставьте свой токен">
+<button id="loginBtn">Войти</button>
+<p id="status"></p>
 
-    <script>
-        const tg = window.Telegram.WebApp;
-        tg.expand();
+<script>
+const tg = window.Telegram.WebApp;
+tg.expand();
 
-        // Получаем токен из URL
-        const urlParams = new URLSearchParams(window.location.search);
-        const token = urlParams.get('token');
+document.getElementById("loginBtn").addEventListener("click", async () => {
+    const token = document.getElementById("tokenInput").value.trim();
+    if (!token) {
+        document.getElementById("status").innerText = "Введите токен!";
+        return;
+    }
 
-        if (!token) {
-            document.getElementById("status").innerText = "Введите токен пользователя!";
-        } else {
-            document.getElementById("status").innerText = "Токен получен: " + token;
-
-            // Запрашиваем профиль через backend
-            async function getProfile() {
-                try {
-                    const res = await fetch("https://game-auth-bot.onrender.com/api/login", {
-                        method: "POST",
-                        headers: {"Content-Type": "application/json"},
-                        body: JSON.stringify({ token })
-                    });
-                    const data = await res.json();
-                    document.getElementById("status").innerText = 
-                        `Привет, ${data.nickname}! Валюта: ${data.currencies.rubles} руб.`;
-                } catch (e) {
-                    console.error(e);
-                    document.getElementById("status").innerText = "Ошибка получения профиля";
-                }
-            }
-
-            getProfile();
+    document.getElementById("status").innerText = "Получаем профиль...";
+    
+    try {
+        const res = await fetch("https://game-auth-bot.onrender.com/api/login", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({ token })
+        });
+        const data = await res.json();
+        if (data.error) {
+            document.getElementById("status").innerText = "Ошибка: " + data.error;
+            return;
         }
-    </script>
+        document.getElementById("status").innerText = `Привет, ${data.nickname}! Валюта: ${data.currencies.rubles} руб.`;
+    } catch (e) {
+        console.error(e);
+        document.getElementById("status").innerText = "Ошибка получения профиля";
+    }
+});
+</script>
 </body>
 </html>
