@@ -1,90 +1,46 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <title>Игровой профиль</title>
-
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
-<script>
-    const tg = window.Telegram.WebApp;
-    tg.expand(); // растягиваем WebApp на весь экран
-    console.log("WebApp init:", tg.initData); // проверка, что initData есть
-</script>
-
-  <style>
-    body {
-      background: #111;
-      color: white;
-      font-family: Arial;
-    }
-    input {
-      width: 90%;
-      padding: 12px;
-      margin: 10px 0;
-      border-radius: 6px;
-      border: none;
-    }
-    button {
-      padding: 12px 20px;
-      background: #4CAF50;
-      color: white;
-      border: none;
-      border-radius: 6px;
-    }
-    #result {
-      margin-top: 20px;
-      padding: 10px;
-      background: #222;
-      border-radius: 10px;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <title>WebApp Тюряга</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
-
 <body>
+    <h1>Вход в игру</h1>
+    <p id="status">Инициализация...</p>
 
-<h2>Авторизация в игре</h2>
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.expand();
 
-<input id="token" placeholder="Вставьте Bearer токен">
-<button onclick="login()">Войти</button>
+        // Получаем токен из URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get('token');
 
-<div id="result">Профиль не загружен</div>
+        if (!token) {
+            document.getElementById("status").innerText = "Введите токен пользователя!";
+        } else {
+            document.getElementById("status").innerText = "Токен получен: " + token;
 
-<script>
-function login() {
-    const token = document.getElementById("token").value;
+            // Запрашиваем профиль через backend
+            async function getProfile() {
+                try {
+                    const res = await fetch("https://game-auth-bot.onrender.com/api/login", {
+                        method: "POST",
+                        headers: {"Content-Type": "application/json"},
+                        body: JSON.stringify({ token })
+                    });
+                    const data = await res.json();
+                    document.getElementById("status").innerText = 
+                        `Привет, ${data.nickname}! Валюта: ${data.currencies.rubles} руб.`;
+                } catch (e) {
+                    console.error(e);
+                    document.getElementById("status").innerText = "Ошибка получения профиля";
+                }
+            }
 
-    if (!token) {
-        alert("Введите токен!");
-        return;
-    }
-
-    fetch("https://game-auth-bot.onrender.com/api/login", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({ token: token })
-    })
-    .then(r => r.json())
-    .then(p => {
-        document.getElementById("result").innerHTML = `
-            <h3>Профиль игрока</h3>
-            <b>Ник:</b> ${p.nickname}<br>
-            <b>ID:</b> ${p.userId}<br>
-            <b>Уровень:</b> ${p.level}<br>
-            <b>Опыт:</b> ${p.currentLevelXp} / ${p.nextLevelXp}<br>
-            <b>Энергия:</b> ${p.energy}/${p.maxEnergy}<br>
-            <br>
-            <h3>Валюта</h3>
-            Сигареты: ${p.currencies.cigarettes}<br>
-            Сахар: ${p.currencies.sugar}<br>
-            Рубли: ${p.currencies.rubles}<br>
-            Бумага: ${p.currencies.paper}<br>
-            Конфискат: ${p.currencies.signet}<br>
-            <br>
-            Все данные игрока доступны в p.currencies
-        `;
-    });
-}
-</script>
-
+            getProfile();
+        }
+    </script>
 </body>
 </html>
