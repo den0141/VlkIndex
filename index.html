@@ -3,41 +3,83 @@
 <head>
   <meta charset="UTF-8" />
   <title>Игровой профиль</title>
+
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+  <style>
+    body {
+      background: #111;
+      color: white;
+      font-family: Arial;
+    }
+    input {
+      width: 90%;
+      padding: 12px;
+      margin: 10px 0;
+      border-radius: 6px;
+      border: none;
+    }
+    button {
+      padding: 12px 20px;
+      background: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 6px;
+    }
+    #result {
+      margin-top: 20px;
+      padding: 10px;
+      background: #222;
+      border-radius: 10px;
+    }
+  </style>
 </head>
 
-<body style="font-family: sans-serif; background:#111; color:white;">
-  <h2>Ваш профиль</h2>
+<body>
 
-  <div id="profile">Загрузка...</div>
+<h2>Авторизация в игре</h2>
 
-  <script>
-    const tg = Telegram.WebApp;
-    tg.expand();
+<input id="token" placeholder="Вставьте Bearer токен">
+<button onclick="login()">Войти</button>
 
-    // initData — телеграмовская подпись
-    const initData = tg.initData;
+<div id="result">Профиль не загружен</div>
 
-    // Запрос на Python-бэкенд
-    fetch("https://your-domain.com/api/profile", {
+<script>
+function login() {
+    const token = document.getElementById("token").value;
+
+    if (!token) {
+        alert("Введите токен!");
+        return;
+    }
+
+    fetch("https://your-domain.com/api/player", {
         method: "POST",
         headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({ initData: initData })
+        body: JSON.stringify({ token: token })
     })
-    .then(res => res.json())
-    .then(data => {
-        document.getElementById("profile").innerHTML = `
-          <b>Уровень:</b> ${data.level}<br>
-          <b>Опыт:</b> ${data.experience} / ${data.nextLevelExperience}<br><br>
-          
-          <b>Валюта:</b><br>
-          Cash: ${data.currencies.Cash}<br>
-          Gold: ${data.currencies.Gold}<br>
-          Prison: ${data.currencies.PrisonCurrency}<br><br>
-
-          <b>Энергия:</b> ${data.energy} / ${data.maxEnergy}<br>
+    .then(r => r.json())
+    .then(p => {
+        document.getElementById("result").innerHTML = `
+            <h3>Профиль игрока</h3>
+            <b>Ник:</b> ${p.nickname}<br>
+            <b>ID:</b> ${p.userId}<br>
+            <b>Уровень:</b> ${p.level}<br>
+            <b>Опыт:</b> ${p.currentLevelXp} / ${p.nextLevelXp}<br>
+            <b>Энергия:</b> ${p.energy}/${p.maxEnergy}<br>
+            <br>
+            <h3>Валюта</h3>
+            Сигареты: ${p.currencies.cigarettes}<br>
+            Сахар: ${p.currencies.sugar}<br>
+            Рубли: ${p.currencies.rubles}<br>
+            Бумага: ${p.currencies.paper}<br>
+            Конфискат: ${p.currencies.signet}<br>
+            <br>
+            Все данные игрока доступны в p.currencies
         `;
     });
-  </script>
+}
+</script>
+
 </body>
 </html>
