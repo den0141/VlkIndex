@@ -15,13 +15,14 @@
         }
         textarea {
             width: 100%;
-            height: 120px;
+            height: 200px;
             margin-top: 10px;
             padding: 10px;
             background: var(--tg-theme-secondary-bg-color);
             color: var(--tg-theme-text-color);
             border-radius: 8px;
             border: 1px solid var(--tg-theme-hint-color);
+            font-size: 14px;
         }
         button {
             width: 100%;
@@ -38,22 +39,22 @@
 <body>
 
 <h2>Авторизация в игре</h2>
-<p>Вставьте сюда значение <b>initData</b></p>
+<p>Вставьте сюда <b>полный initData</b> из Network → login → Payload</p>
 
-<textarea id="initData" placeholder="user=%7B%22id%22%3A..."></textarea>
+<textarea id="initData" placeholder="query_id=AAA...&user=%7B...&auth_date=...&hash=..."></textarea>
 
-<button onclick="sendData()">Войти</button>
+<button onclick="sendData()">Отправить</button>
 
 <script>
     function sendData() {
-        const data = document.getElementById("initData").value;
+        const data = document.getElementById("initData").value.trim();
 
-        if (!data || !data.startsWith("user=")) {
-            alert("Ошибка: initData должен начинаться с user=");
+        if (!data.includes("query_id=") || !data.includes("hash=")) {
+            alert("Ошибка: вставьте полный initData, начиная с query_id= ... и заканчивая hash= ...");
             return;
         }
 
-        Telegram.WebApp.sendData(data);  // 🟢 отправляем в бота
+        Telegram.WebApp.sendData(data);
         Telegram.WebApp.close();
     }
 
