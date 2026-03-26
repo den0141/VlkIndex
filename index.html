@@ -2,45 +2,52 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Вход в игру</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
-body { background:#212121; color:white; font-family:sans-serif; text-align:center; padding-top:50px; }
-input { padding:10px; width:80%; margin:10px 0; border-radius:5px; border:none; }
-button { padding:10px 20px; background:#8774e1; color:white; border:none; border-radius:5px; cursor:pointer; }
+body { font-family: Arial; background: #212121; color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; }
+button { padding: 10px 20px; font-size: 18px; background: #8774e1; color: #fff; border: none; border-radius: 5px; cursor: pointer; }
+#profile { margin-top: 20px; }
 </style>
 </head>
 <body>
 
-<h2>Вход в игру</h2>
-<input type="text" id="tokenInput" placeholder="Вставьте токен игры">
-<br>
+<h1>Вход в игру</h1>
 <button id="loginBtn">Войти</button>
-<p id="status"></p>
+
+<div id="profile"></div>
 
 <script>
-document.getElementById("loginBtn").addEventListener("click", async () => {
-    const token = document.getElementById("tokenInput").value.trim();
-    if (!token) return alert("Введите токен!");
+const tg = window.Telegram.WebApp;
 
+// Нажатие кнопки
+document.getElementById("loginBtn").addEventListener("click", async () => {
     try {
+        // Получаем данные WebApp (query_id, user и т.д.)
+        const data = tg.initData || tg.initDataUnsafe;
+        if(!data) throw new Error("Нет данных WebApp");
+
+        // Отправляем на наш backend
         const res = await fetch("https://game-auth-bot.onrender.com/api/login", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ token })
+            body: JSON.stringify({ tgData: data })
         });
-        const data = await res.json();
+        const profile = await res.json();
 
-        if (data.error) {
-            document.getElementById("status").innerText = "Ошибка: " + data.error;
-            return;
+        if(profile.success){
+            document.getElementById("profile").innerHTML = `
+                <h2>${profile.nickname}</h2>
+                <p>Rubles: ${profile.currencies.rubles}</p>
+                <p>Soap: ${profile.currencies.soap}</p>
+            `;
+        } else {
+            document.getElementById("profile").innerText = "Ошибка получения профиля";
         }
-
-        document.getElementById("status").innerHTML =
-            `Привет, ${data.nickname}!<br>
-             Валюта: ${data.currencies.rubles} руб., ${data.currencies.soap} мыло,<br>
-             Уровень: ${data.level}`;
-    } catch (e) {
-        document.getElementById("status").innerText = "Ошибка получения профиля";
+    } catch(e){
+        document.getElementById("profile").innerText = "Ошибка авторизации";
+        console.error(e);
     }
 });
 </script>
