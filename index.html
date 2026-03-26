@@ -5,6 +5,11 @@
   <title>Игровой профиль</title>
 
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script>
+    const tg = window.Telegram.WebApp;
+    tg.expand(); // растягиваем WebApp на весь экран
+    console.log("WebApp init:", tg.initData); // проверка, что initData есть
+</script>
 
   <style>
     body {
